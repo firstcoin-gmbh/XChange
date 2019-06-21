@@ -9,7 +9,7 @@
 
     <groupId>org.knowm.xchange</groupId>
     <artifactId>xchange-parent</artifactId>
-    <version>4.3.19-SNAPSHOT</version>
+    <version>4.3.20-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>XChange</name>
@@ -146,6 +146,7 @@
         <module>xchange-cryptonit</module>
         <module>xchange-cryptopia</module>
         <module>xchange-coinsuper</module>
+        <module>xchange-deribit</module>
         <module>xchange-dsx</module>
         <module>xchange-dragonex</module>
         <module>xchange-dvchain</module>
@@ -530,3 +531,4 @@
     </build>
 
 </project>
+
