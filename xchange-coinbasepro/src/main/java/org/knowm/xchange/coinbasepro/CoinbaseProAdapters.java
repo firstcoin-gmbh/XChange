@@ -168,7 +168,7 @@ public class CoinbaseProAdapters {
               coinbaseProAccount.getHold()));
     }
 
-    return new Wallet(coinbaseProAccounts[0].getProfile_id(), balances);
+    return Wallet.Builder.from(balances).id(coinbaseProAccounts[0].getProfile_id()).build();
   }
 
   @SuppressWarnings("unchecked")
@@ -372,33 +372,47 @@ public class CoinbaseProAdapters {
     Map<CurrencyPair, CurrencyPairMetaData> currencyPairs = exchangeMetaData.getCurrencyPairs();
     Map<Currency, CurrencyMetaData> currencies = exchangeMetaData.getCurrencies();
     for (CoinbaseProProduct product : products) {
+      if (!product.getStatus().equals("online")) {
+        continue;
+      }
+
       BigDecimal minSize = product.getBaseMinSize();
       BigDecimal maxSize = product.getBaseMaxSize();
+      BigDecimal minMarketFunds = product.getMinMarketFunds();
+      BigDecimal maxMarketFunds = product.getMaxMarketFunds();
 
       CurrencyPair pair = adaptCurrencyPair(product);
 
       CurrencyPairMetaData staticMetaData = exchangeMetaData.getCurrencyPairs().get(pair);
       int baseScale = numberOfDecimals(product.getBaseIncrement());
       int priceScale = numberOfDecimals(product.getQuoteIncrement());
+      boolean marketOrderAllowed = !product.isLimitOnly();
       CurrencyPairMetaData cpmd =
           new CurrencyPairMetaData(
               new BigDecimal("0.25"), // Trading fee at Coinbase is 0.25 %
               minSize,
               maxSize,
+              minMarketFunds,
+              maxMarketFunds,
               baseScale,
               priceScale,
               staticMetaData != null ? staticMetaData.getFeeTiers() : null,
               null,
-              pair.counter);
+              pair.counter,
+              marketOrderAllowed);
       currencyPairs.put(pair, cpmd);
     }
 
-    for (CoinbaseProCurrency currency : cbCurrencies) {
-      Currency cur = adaptCurrency(currency);
-      int scale = numberOfDecimals(currency.getMaxPrecision());
-      // Coinbase has a 0 withdrawal fee
-      currencies.put(cur, new CurrencyMetaData(scale, BigDecimal.ZERO));
-    }
+    Arrays.stream(cbCurrencies)
+        .filter(currency -> currency.getStatus().equals("online"))
+        .forEach(
+            currency -> {
+              Currency cur = adaptCurrency(currency);
+              int scale = numberOfDecimals(currency.getMaxPrecision());
+              // Coinbase has a 0 withdrawal fee
+              currencies.put(cur, new CurrencyMetaData(scale, BigDecimal.ZERO));
+            });
+
     return new ExchangeMetaData(
         currencyPairs,
         currencies,
@@ -444,11 +458,13 @@ public class CoinbaseProAdapters {
 
   public static CoinbaseProPlaceMarketOrder adaptCoinbaseProPlaceMarketOrder(
       MarketOrder marketOrder) {
+    OrderType orderType = marketOrder.getType();
     return new CoinbaseProPlaceMarketOrder.Builder()
         .productId(adaptProductID(marketOrder.getCurrencyPair()))
         .type(CoinbaseProPlaceOrder.Type.market)
         .side(adaptSide(marketOrder.getType()))
-        .size(marketOrder.getOriginalAmount())
+        .funds(marketOrder.getType() == OrderType.BID ? marketOrder.getOriginalAmount() : null)
+        .size(marketOrder.getType() == OrderType.ASK ? marketOrder.getOriginalAmount() : null)
         .build();
   }
 
@@ -501,17 +517,45 @@ public class CoinbaseProAdapters {
     String address = coinbaseProTransfer.getDetails().getCryptoAddress();
     if (address == null) address = coinbaseProTransfer.getDetails().getSentToAddress();
 
+    String cryptoTransactionHash = coinbaseProTransfer.getDetails().getCryptoTransactionHash();
+    String transactionHash = adaptTransactionHash(currency.getSymbol(), cryptoTransactionHash);
+
     return new FundingRecord(
         address,
+        coinbaseProTransfer.getDetails().getDestinationTag(),
         timestamp,
         currency,
         coinbaseProTransfer.amount(),
         coinbaseProTransfer.getId(),
-        coinbaseProTransfer.getDetails().getCryptoTransactionHash(),
+        transactionHash,
         coinbaseProTransfer.type(),
         status,
         null,
         null,
         null);
+  }
+
+  // crypto_transaction_link: "https://etherscan.io/tx/0x{{txId}}"
+  private static String adaptTransactionHash(String currency, String transactionHash) {
+    switch (currency) {
+      case "ZRX":
+      case "BAT":
+      case "LOOM":
+      case "CVC":
+      case "DNT":
+      case "MANA":
+      case "GNT":
+      case "REP":
+      case "LINK":
+      case "ETH":
+      case "ETC":
+      case "USDC":
+      case "DAI":
+      case "ZIL":
+      case "MKR":
+        transactionHash = "0x" + transactionHash;
+        break;
+    }
+    return transactionHash;
   }
 }
