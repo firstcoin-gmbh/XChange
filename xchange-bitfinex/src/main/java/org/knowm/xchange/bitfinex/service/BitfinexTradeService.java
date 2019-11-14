@@ -183,6 +183,7 @@ public class BitfinexTradeService extends BitfinexTradeServiceRaw implements Tra
       long startTime = 0;
       Long endTime = null;
       Long limit = 50L;
+      Long sort = null;
 
       if (params instanceof TradeHistoryParamsTimeSpan) {
         TradeHistoryParamsTimeSpan paramsTimeSpan = (TradeHistoryParamsTimeSpan) params;
@@ -190,19 +191,17 @@ public class BitfinexTradeService extends BitfinexTradeServiceRaw implements Tra
         endTime = DateUtils.toMillisNullSafe(paramsTimeSpan.getEndTime());
       }
 
-      if (params instanceof TradeHistoryParamPaging) {
-        TradeHistoryParamPaging pagingParams = (TradeHistoryParamPaging) params;
-        Integer pageLength = pagingParams.getPageLength();
-        Integer pageNum = pagingParams.getPageNumber();
-        limit = (pageLength != null && pageNum != null) ? pageLength * (pageNum + 1) : 50L;
-      }
-
       if (params instanceof TradeHistoryParamLimit) {
         TradeHistoryParamLimit tradeHistoryParamLimit = (TradeHistoryParamLimit) params;
         limit = Long.valueOf(tradeHistoryParamLimit.getLimit());
       }
 
-      final List<Trade> trades = getBitfinexTradesV2(symbol, startTime, endTime, limit);
+      if (params instanceof TradeHistoryParamsSorted) {
+        TradeHistoryParamsSorted tradeHistoryParamsSorted = (TradeHistoryParamsSorted) params;
+        sort = tradeHistoryParamsSorted.getOrder() == TradeHistoryParamsSorted.Order.asc ? 1L : -1L;
+      }
+
+      final List<Trade> trades = getBitfinexTradesV2(symbol, startTime, endTime, limit, sort);
       return BitfinexAdapters.adaptTradeHistoryV2(trades);
     } catch (BitfinexException e) {
       throw BitfinexErrorAdapter.adapt(e);
@@ -250,38 +249,13 @@ public class BitfinexTradeService extends BitfinexTradeServiceRaw implements Tra
   }
 
   public static class BitfinexTradeHistoryParams extends DefaultTradeHistoryParamsTimeSpan
-      implements TradeHistoryParamCurrencyPair, TradeHistoryParamPaging, TradeHistoryParamLimit {
+      implements TradeHistoryParamCurrencyPair, TradeHistoryParamLimit, TradeHistoryParamsSorted {
 
-    private int count;
     private CurrencyPair pair;
-    private Integer pageNumber;
     private Integer limit;
+    private Order order;
 
     public BitfinexTradeHistoryParams() {}
-
-    @Override
-    public Integer getPageLength() {
-
-      return count;
-    }
-
-    @Override
-    public void setPageLength(Integer count) {
-
-      this.count = count;
-    }
-
-    @Override
-    public Integer getPageNumber() {
-
-      return pageNumber;
-    }
-
-    @Override
-    public void setPageNumber(Integer pageNumber) {
-
-      this.pageNumber = pageNumber;
-    }
 
     @Override
     public CurrencyPair getCurrencyPair() {
@@ -303,6 +277,16 @@ public class BitfinexTradeService extends BitfinexTradeServiceRaw implements Tra
     @Override
     public void setLimit(Integer limit) {
       this.limit = limit;
+    }
+
+    @Override
+    public Order getOrder() {
+      return this.order;
+    }
+
+    @Override
+    public void setOrder(Order order) {
+      this.order = order;
     }
   }
 }
