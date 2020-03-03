@@ -59,10 +59,11 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
     }
   }
 
-  /** (0:pending,1:success) */
+  /** (0:pending,6: credited but cannot withdraw,1:success) */
   private static FundingRecord.Status depositStatus(int status) {
     switch (status) {
       case 0:
+      case 6:
         return Status.PROCESSING;
       case 1:
         return Status.COMPLETE;
@@ -72,9 +73,7 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
   }
 
   private BinanceAccountInformation getBinanceAccountInformation() throws IOException {
-    Long recvWindow =
-        (Long) exchange.getExchangeSpecification().getExchangeSpecificParametersItem("recvWindow");
-    return super.account(recvWindow, getTimestamp());
+    return super.account(getRecvWindow(), getTimestamp());
   }
 
   @Override
@@ -197,9 +196,6 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
           asset = cp.getCurrency().getCurrencyCode();
         }
       }
-      Long recvWindow =
-          (Long)
-              exchange.getExchangeSpecification().getExchangeSpecificParametersItem("recvWindow");
 
       boolean withdrawals = true;
       boolean deposits = true;
@@ -226,7 +222,7 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
 
       List<FundingRecord> result = new ArrayList<>();
       if (withdrawals) {
-        super.withdrawHistory(asset, startTime, endTime, recvWindow, getTimestamp())
+        super.withdrawHistory(asset, startTime, endTime, getRecvWindow(), getTimestamp())
             .forEach(
                 w -> {
                   result.add(
@@ -247,7 +243,7 @@ public class BinanceAccountService extends BinanceAccountServiceRaw implements A
       }
 
       if (deposits) {
-        super.depositHistory(asset, startTime, endTime, recvWindow, getTimestamp())
+        super.depositHistory(asset, startTime, endTime, getRecvWindow(), getTimestamp())
             .forEach(
                 d -> {
                   result.add(

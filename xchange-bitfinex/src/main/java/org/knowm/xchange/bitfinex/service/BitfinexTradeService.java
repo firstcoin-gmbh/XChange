@@ -7,8 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.bitfinex.BitfinexErrorAdapter;
+import org.knowm.xchange.bitfinex.dto.BitfinexException;
 import org.knowm.xchange.bitfinex.v1.BitfinexOrderType;
-import org.knowm.xchange.bitfinex.v1.dto.BitfinexException;
 import org.knowm.xchange.bitfinex.v1.dto.trade.BitfinexOrderFlags;
 import org.knowm.xchange.bitfinex.v1.dto.trade.BitfinexOrderStatusResponse;
 import org.knowm.xchange.bitfinex.v1.dto.trade.BitfinexReplaceOrderRequest;
@@ -180,7 +180,7 @@ public class BitfinexTradeService extends BitfinexTradeServiceRaw implements Tra
                 ((TradeHistoryParamCurrencyPair) params).getCurrencyPair());
       }
 
-      long startTime = 0;
+      Long startTime = 0L;
       Long endTime = null;
       Long limit = 50L;
       Long sort = null;
@@ -193,7 +193,9 @@ public class BitfinexTradeService extends BitfinexTradeServiceRaw implements Tra
 
       if (params instanceof TradeHistoryParamLimit) {
         TradeHistoryParamLimit tradeHistoryParamLimit = (TradeHistoryParamLimit) params;
-        limit = Long.valueOf(tradeHistoryParamLimit.getLimit());
+        if (tradeHistoryParamLimit.getLimit() != null) {
+          limit = Long.valueOf(tradeHistoryParamLimit.getLimit());
+        }
       }
 
       if (params instanceof TradeHistoryParamsSorted) {

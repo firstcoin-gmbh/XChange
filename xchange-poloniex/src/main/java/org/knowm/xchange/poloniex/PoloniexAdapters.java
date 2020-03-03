@@ -35,7 +35,6 @@ import org.knowm.xchange.poloniex.dto.account.PoloniexBalance;
 import org.knowm.xchange.poloniex.dto.account.PoloniexLoan;
 import org.knowm.xchange.poloniex.dto.marketdata.PoloniexCurrencyInfo;
 import org.knowm.xchange.poloniex.dto.marketdata.PoloniexDepth;
-import org.knowm.xchange.poloniex.dto.marketdata.PoloniexLevel;
 import org.knowm.xchange.poloniex.dto.marketdata.PoloniexMarketData;
 import org.knowm.xchange.poloniex.dto.marketdata.PoloniexPublicTrade;
 import org.knowm.xchange.poloniex.dto.marketdata.PoloniexTicker;
@@ -89,31 +88,17 @@ public class PoloniexAdapters {
 
   public static List<LimitOrder> adaptPoloniexPublicOrders(
       List<List<BigDecimal>> rawLevels, OrderType orderType, CurrencyPair currencyPair) {
-
-    List<PoloniexLevel> levels = new ArrayList<>();
-
-    for (List<BigDecimal> rawLevel : rawLevels) {
-      levels.add(adaptRawPoloniexLevel(rawLevel));
-    }
-
     List<LimitOrder> orders = new ArrayList<>();
 
-    for (PoloniexLevel level : levels) {
-
+    for (List<BigDecimal> rawlevel : rawLevels) {
       LimitOrder limitOrder =
           new LimitOrder.Builder(orderType, currencyPair)
-              .originalAmount(level.getAmount())
-              .limitPrice(level.getLimit())
+              .originalAmount(rawlevel.get(1))
+              .limitPrice(rawlevel.get(0))
               .build();
       orders.add(limitOrder);
     }
     return orders;
-  }
-
-  public static PoloniexLevel adaptRawPoloniexLevel(List<BigDecimal> level) {
-
-    PoloniexLevel poloniexLevel = new PoloniexLevel(level.get(1), level.get(0));
-    return poloniexLevel;
   }
 
   public static Trades adaptPoloniexPublicTrades(
@@ -135,15 +120,14 @@ public class PoloniexAdapters {
         poloniexTrade.getType().equalsIgnoreCase("buy") ? OrderType.BID : OrderType.ASK;
     Date timestamp = PoloniexUtils.stringToDate(poloniexTrade.getDate());
 
-    Trade trade =
-        new Trade(
-            type,
-            poloniexTrade.getAmount(),
-            currencyPair,
-            poloniexTrade.getRate(),
-            timestamp,
-            poloniexTrade.getTradeID());
-    return trade;
+    return new Trade.Builder()
+        .type(type)
+        .originalAmount(poloniexTrade.getAmount())
+        .currencyPair(currencyPair)
+        .price(poloniexTrade.getRate())
+        .timestamp(timestamp)
+        .id(poloniexTrade.getTradeID())
+        .build();
   }
 
   public static List<Balance> adaptPoloniexBalances(
@@ -234,23 +218,24 @@ public class PoloniexAdapters {
     final String feeCurrencyCode;
     if (orderType == OrderType.ASK) {
       feeAmount =
-          amount.multiply(price).multiply(userTrade.getFee()).setScale(8, BigDecimal.ROUND_DOWN);
+          amount.multiply(price).multiply(userTrade.getFee()).setScale(8, RoundingMode.DOWN);
       feeCurrencyCode = currencyPair.counter.getCurrencyCode();
     } else {
-      feeAmount = amount.multiply(userTrade.getFee()).setScale(8, BigDecimal.ROUND_DOWN);
+      feeAmount = amount.multiply(userTrade.getFee()).setScale(8, RoundingMode.DOWN);
       feeCurrencyCode = currencyPair.base.getCurrencyCode();
     }
 
-    return new UserTrade(
-        orderType,
-        amount,
-        currencyPair,
-        price,
-        date,
-        tradeId,
-        orderId,
-        feeAmount,
-        Currency.getInstance(feeCurrencyCode));
+    return new UserTrade.Builder()
+        .type(orderType)
+        .originalAmount(amount)
+        .currencyPair(currencyPair)
+        .price(price)
+        .timestamp(date)
+        .id(tradeId)
+        .orderId(orderId)
+        .feeAmount(feeAmount)
+        .feeCurrency(Currency.getInstance(feeCurrencyCode))
+        .build();
   }
 
   public static ExchangeMetaData adaptToExchangeMetaData(
@@ -389,7 +374,7 @@ public class PoloniexAdapters {
 
     BigDecimal weightedAveragePrice =
         weightedPrices.stream()
-            .reduce(new BigDecimal(0), (a, b) -> a.add(b))
+            .reduce(new BigDecimal(0), BigDecimal::add)
             .divide(amount, RoundingMode.HALF_UP);
 
     return new LimitOrder(
