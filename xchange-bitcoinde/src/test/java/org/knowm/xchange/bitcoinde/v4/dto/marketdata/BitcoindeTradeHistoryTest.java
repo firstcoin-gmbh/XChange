@@ -41,7 +41,7 @@ public class BitcoindeTradeHistoryTest {
 
         BitcoindeTradeHistoryTrade firstTrade = trades.get(0);
 
-        assertEquals("2EDYNS", firstTrade.getTid());
+        assertEquals("2EDYNS", firstTrade.getTradeId());
 
         assertEquals( false, firstTrade.getIsExternalWalletTrade());
         assertEquals(BitcoindeType.SELL, firstTrade.getType());
@@ -50,8 +50,8 @@ public class BitcoindeTradeHistoryTest {
         assertEquals(new BigDecimal("125.28"), firstTrade.getVolume());
         assertEquals(new BigDecimal("124.68"), firstTrade.getVolumeAfterFee());
         assertEquals(new BigDecimal("0.4975"), firstTrade.getAmountAfterFee());
-        assertEquals(new BigDecimal("0.6"), firstTrade.getFeeToPay());
-        assertEquals(new BigDecimal("0.0025"), firstTrade.getFeeToTrade());
+        assertEquals(new BigDecimal("0.6"), firstTrade.getFeeCurrencyToPay());
+        assertEquals(new BigDecimal("0.0025"), firstTrade.getFeeCurrencyToTrade());
         assertEquals("C4Y8HD", firstTrade.getNewTradeIdForRemainingAmount());
         assertEquals("positive", firstTrade.getRating());
 

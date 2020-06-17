@@ -38,7 +38,7 @@ public class BitcoindeTradesTest {
 
     assertEquals(new BigDecimal("2391.48"), trades[0].getPrice());
     assertEquals(new BigDecimal("0.90000000"), trades[0].getAmount());
-    assertEquals(Long.toString(FIRST_TRADE_TID), trades[0].getTid());
+    //assertEquals(Long.toString(FIRST_TRADE_TID), trades[0].getTradeId());
     assertEquals(date, trades[0].getDate());
   }
 }

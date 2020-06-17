@@ -7,10 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.knowm.xchange.bitcoinde.OrderQuantities;
-import org.knowm.xchange.bitcoinde.OrderRequirements;
-import org.knowm.xchange.bitcoinde.TradingPartnerInformation;
-import org.knowm.xchange.bitcoinde.TrustLevel;
+import org.knowm.xchange.bitcoinde.*;
 import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeFundingHistoryWrapper;
 import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeTradeHistoryWrapper;
 import org.knowm.xchange.bitcoinde.v4.dto.account.*;
@@ -208,39 +205,36 @@ public final class BitcoindeAdapters {
    * object.
    * @return
    */
-  public static List<FundingRecord> adaptFundingHistory(BitcoindeFundingHistoryWrapper bitcoindeFundingHistoryWrapper, CurrencyPair currencyPair)
+  public static List<FundingRecord> adaptFundingHistory(BitcoindeFundingHistoryWrapper bitcoindeFundingHistoryWrapper,
+                                                        CurrencyPair currencyPair)
   {
     List<FundingRecord> fundingRecords = new ArrayList<>();
-    BigDecimal amount = new BigDecimal(0);
+    BigDecimal fee = null;
 
-    for (BitcoindeAccountLedger ledger : bitcoindeFundingHistoryWrapper.getAccountLedgers()){
+    Map<List<BitcoindeAccountLedger>, BigDecimal> map =
+            bitcoindeFundingHistoryWrapper.mapLedger();
 
-      /*
-      if (ledger.getType() == BitcoindeType.PAYOUT ||
-              ledger.getType() == BitcoindeType.KICKBACK ||
-              ledger.getType() == BitcoindeType.OUTGOING_FEE_VOLUNTARY){
+    for(Map.Entry<List<BitcoindeAccountLedger>, BigDecimal> mapEntry : map.entrySet()){
+      for (BitcoindeAccountLedger ledger : mapEntry.getKey()){
+        if (ledger.getType() == BitcoindeType.PAYOUT){
+          fee = mapEntry.getValue();
+        }
 
-        amount = ledger.getTrade().getCurrencyToPay().getAfterFee();
+        fundingRecords.add(new FundingRecord.Builder()
+                //.setAddress(ledger.)
+                .setDate(ledger.getDate())
+                .setCurrency(currencyPair.base)
+                .setAmount(ledger.getCashflow())
+                .setBalance(ledger.getBalance())
+                .setType(adaptFundingType(ledger.getType()))
+                .setBlockchainTransactionHash(ledger.getReference())
+                .setInternalId(ledger.getReference())
+                //.setStatus(led.get)
+                .setFee(fee)
+                .build());
       }
-      else{
-        amount = ledger.getTrade().getCurrencyToPay().getBeforeFee();
-      }
-       */
-
-      fundingRecords.add(new FundingRecord.Builder()
-              //.setAddress(ledger.)
-              .setDate(ledger.getDate())
-              .setCurrency(currencyPair.base)
-              //.setAmount(amount)
-              .setBalance(ledger.getBalance())
-              .setType(adaptFundingType(ledger.getType()))
-              //?
-              .setBlockchainTransactionHash(ledger.getReference())
-              //.setInternalId(ledger.get)
-              //.setStatus()
-              //.setFee()
-              .build());
     }
+
     return fundingRecords;
   }
 
@@ -249,11 +243,25 @@ public final class BitcoindeAdapters {
    * object.
    * @return
    */
-  public static UserTrades adaptTradeHistory(BitcoindeTradeHistoryWrapper bitcoindeTradeHistoryWrapper, CurrencyPair currencyPair) {
-
+  public static UserTrades adaptTradeHistory(BitcoindeTradeHistoryWrapper bitcoindeTradeHistoryWrapper,
+                                             CurrencyPair currencyPair,
+                                              TradeSortType tradeSortType) {
     List<UserTrade> trades = new ArrayList<>();
 
     for (BitcoindeTradeHistoryTrade trade : bitcoindeTradeHistoryWrapper.getTrades()) {
+
+      BigDecimal fee;
+
+      switch (trade.getType()){
+        case BUY:
+          fee = trade.getFeeCurrencyToTrade();
+          break;
+        case SELL:
+          fee = trade.getFeeCurrencyToPay();
+          break;
+        default:
+          throw new TypeNotPresentException(trade.getType().toString(), null);
+      }
 
       trades.add(new UserTrade.Builder()
               .type(adaptOrderType(trade.getType()))
@@ -261,15 +269,15 @@ public final class BitcoindeAdapters {
               .currencyPair(currencyPair)
               .price(trade.getPrice())
               .timestamp(trade.getCreatedAt())
-              .id(trade.getTid())
+              .id(trade.getTradeId())
               //.orderId()
               //.orderUserReference(trade.getNewTradeIdForRemainingAmount())
-              .feeAmount(trade.getFeeToPay())
+              .feeAmount(fee)
               .feeCurrency(currencyPair.base)
               .build());
     }
 
-    return new UserTrades(trades, TradeSortType.SortByTimestamp);
+    return new UserTrades(trades, tradeSortType);
   }
 
   /**
@@ -298,12 +306,15 @@ public final class BitcoindeAdapters {
    * @return The XChange Trades
    */
   public static Trades adaptTrades(
-      BitcoindeTradesWrapper bitcoindeTradesWrapper, CurrencyPair currencyPair) {
+      BitcoindeTradesWrapper bitcoindeTradesWrapper,
+      CurrencyPair currencyPair,
+      TradeSortType sortType) {
     final List<Trade> trades = new ArrayList<>();
     long lastTradeId = 0;
 
     for (BitcoindeTrade bitcoindeTrade : bitcoindeTradesWrapper.getTrades()) {
-      final long tid = Long.valueOf( bitcoindeTrade.getTid());
+
+      final long tid = Long.valueOf(bitcoindeTrade.getTradeId());
 
       if (tid > lastTradeId) {
         lastTradeId = tid;
@@ -314,11 +325,11 @@ public final class BitcoindeAdapters {
               .currencyPair(currencyPair)
               .price(bitcoindeTrade.getPrice())
               .timestamp(bitcoindeTrade.getDate())
-              .id(String.valueOf(tid))
+              .id(bitcoindeTrade.getTradeId())
               .build());
     }
 
-    return new Trades(trades, lastTradeId, TradeSortType.SortByID);
+    return new Trades(trades, lastTradeId, sortType);
   }
 
   /**

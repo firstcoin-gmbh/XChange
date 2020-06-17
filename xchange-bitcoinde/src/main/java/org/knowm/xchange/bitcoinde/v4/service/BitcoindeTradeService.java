@@ -12,6 +12,7 @@ import org.knowm.xchange.bitcoinde.v4.dto.account.BitcoindeType;
 import org.knowm.xchange.bitcoinde.v4.dto.trade.BitcoindeTradeState;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
 import org.knowm.xchange.dto.trade.UserTrades;
@@ -92,7 +93,8 @@ public class BitcoindeTradeService extends BitcoindeTradeServiceRaw implements T
             startTime,
             endTime,
             page),
-            currencyPair);
+            currencyPair,
+            Trades.TradeSortType.SortByTimestamp);
   }
 
   @Override

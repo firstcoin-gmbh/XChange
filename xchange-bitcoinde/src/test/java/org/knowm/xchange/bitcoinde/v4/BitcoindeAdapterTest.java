@@ -150,7 +150,7 @@ public class BitcoindeAdapterTest {
     // Use our adapter to get a generic Trades object from a
     // BitcoindeTrade[] object
     final Trades trades =
-        BitcoindeAdapters.adaptTrades(bitcoindeTradesWrapper, CurrencyPair.BTC_EUR);
+        BitcoindeAdapters.adaptTrades(bitcoindeTradesWrapper, CurrencyPair.BTC_EUR, Trades.TradeSortType.SortByTimestamp);
     final Trade firstTrade = trades.getTrades().get(0);
 
     // Make sure the adapter got all the data
@@ -257,7 +257,9 @@ public class BitcoindeAdapterTest {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
     Date timestamp = simpleDateFormat.parse("2015-01-10T15:00:00+02:00");
 
-    UserTrades userTrades = BitcoindeAdapters.adaptTradeHistory(bitcoindeTradeHistoryWrapper, CurrencyPair.BTC_EUR);
+    UserTrades userTrades = BitcoindeAdapters.adaptTradeHistory(bitcoindeTradeHistoryWrapper,
+            CurrencyPair.BTC_EUR,
+            Trades.TradeSortType.SortByTimestamp);
     UserTrade firstTrade = userTrades.getUserTrades().get(0);
 
     assertEquals("2EDYNS", firstTrade.getId());

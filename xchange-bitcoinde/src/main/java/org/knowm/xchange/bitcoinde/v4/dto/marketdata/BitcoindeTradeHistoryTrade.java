@@ -32,10 +32,10 @@ public class BitcoindeTradeHistoryTrade extends BitcoindeTrade{
     private BigDecimal volumeAfterFee;
 
     @JsonProperty("fee_currency_to_pay")
-    private BigDecimal feeToPay;
+    private BigDecimal feeCurrencyToPay;
 
     @JsonProperty("fee_currency_to_trade")
-    private BigDecimal feeToTrade;
+    private BigDecimal feeCurrencyToTrade;
 
     @JsonProperty("new_trade_id_for_remaining_amount")
     private String newTradeIdForRemainingAmount;

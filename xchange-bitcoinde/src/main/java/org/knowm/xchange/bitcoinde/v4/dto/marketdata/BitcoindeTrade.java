@@ -17,7 +17,7 @@ import org.knowm.xchange.currency.CurrencyPair;
 public class BitcoindeTrade {
 
   @JsonProperty("trade_id")
-  private String tid;
+  private String tradeId;
 
   @JsonProperty("date")
   private Date date;
