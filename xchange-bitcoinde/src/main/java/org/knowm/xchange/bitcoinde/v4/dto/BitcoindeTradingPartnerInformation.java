@@ -2,31 +2,43 @@ package org.knowm.xchange.bitcoinde.v4.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BitcoindeTradingPartnerInformation {
 
   @JsonProperty("username")
-  public String userName;
+  private String userName;
 
   @JsonProperty("is_kyc_full")
-  public Boolean isKycFull;
+  private Boolean isKycFull;
 
   @JsonProperty("trust_level")
-  public String trustLevel;
+  private String trustLevel;
+
+  @JsonProperty("depositor")
+  private String depositor;
+
+  @JsonProperty("iban")
+  private String iban;
 
   @JsonProperty("bank_name")
-  public String bankName;
+  private String bankName;
 
   @JsonProperty("bic")
-  public String bic;
+  private String bic;
 
   @JsonProperty("seat_of_bank")
-  public String seatOfBank;
+  private String seatOfBank;
 
   @JsonProperty("rating")
-  public Integer rating;
+  private Integer rating;
 
   @JsonProperty("amount_trades")
-  public Integer amountTrades;
+  private Integer amountTrades;
 }

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.Date;
+
 import org.junit.Test;
 
 public class BitcoindeTradesTest {
@@ -31,9 +33,12 @@ public class BitcoindeTradesTest {
     // Make sure trade values are correct
     final BitcoindeTrade[] trades = bitcoindeTradesWrapper.getTrades();
 
-    assertEquals(FIRST_TRADE_DATE, trades[0].getDate());
+    final Date date = new Date();
+    date.setTime(FIRST_TRADE_DATE * 1000);
+
     assertEquals(new BigDecimal("2391.48"), trades[0].getPrice());
     assertEquals(new BigDecimal("0.90000000"), trades[0].getAmount());
-    assertEquals(FIRST_TRADE_TID, trades[0].getTid());
+    assertEquals(Long.toString(FIRST_TRADE_TID), trades[0].getTid());
+    assertEquals(date, trades[0].getDate());
   }
 }

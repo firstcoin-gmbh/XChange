@@ -1,23 +1,19 @@
 package org.knowm.xchange.bitcoinde.v4.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BitcoindeResponse {
 
-  private final int credits;
-  private final String[] errors;
-
-  public BitcoindeResponse(
-      @JsonProperty("credits") int credits, @JsonProperty("errors") String[] errors) {
-    this.credits = credits;
-    this.errors = errors;
-  }
-
-  public int getCredits() {
-    return credits;
-  }
-
-  public String[] getErrors() {
-    return errors;
-  }
+  @JsonProperty("credits")
+  private int credits;
+  @JsonProperty("errors")
+  private String[] errors;
 }

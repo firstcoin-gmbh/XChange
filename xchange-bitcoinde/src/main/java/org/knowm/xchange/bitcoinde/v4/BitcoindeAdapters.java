@@ -1,22 +1,20 @@
 package org.knowm.xchange.bitcoinde.v4;
 
+import java.awt.font.FontRenderContext;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.knowm.xchange.bitcoinde.OrderQuantities;
 import org.knowm.xchange.bitcoinde.OrderRequirements;
 import org.knowm.xchange.bitcoinde.TradingPartnerInformation;
 import org.knowm.xchange.bitcoinde.TrustLevel;
-import org.knowm.xchange.bitcoinde.v4.dto.account.BitcoindeAccountWrapper;
-import org.knowm.xchange.bitcoinde.v4.dto.account.BitcoindeBalances;
-import org.knowm.xchange.bitcoinde.v4.dto.account.BitcoindeFidorReservation;
-import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeCompactOrder;
-import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeCompactOrderbookWrapper;
-import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeOrder;
-import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeOrderbookWrapper;
-import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeTrade;
-import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeTradesWrapper;
+import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeFundingHistoryWrapper;
+import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeTradeHistoryWrapper;
+import org.knowm.xchange.bitcoinde.v4.dto.account.*;
+import org.knowm.xchange.bitcoinde.v4.dto.marketdata.*;
 import org.knowm.xchange.bitcoinde.v4.dto.trade.BitcoindeMyOpenOrdersWrapper;
 import org.knowm.xchange.bitcoinde.v4.dto.trade.BitcoindeMyOrder;
 import org.knowm.xchange.currency.Currency;
@@ -25,6 +23,7 @@ import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.Order.OrderType;
 import org.knowm.xchange.dto.account.AccountInfo;
 import org.knowm.xchange.dto.account.Balance;
+import org.knowm.xchange.dto.account.FundingRecord;
 import org.knowm.xchange.dto.account.Wallet;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Trade;
@@ -32,7 +31,8 @@ import org.knowm.xchange.dto.marketdata.Trades;
 import org.knowm.xchange.dto.marketdata.Trades.TradeSortType;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.OpenOrders;
-import org.knowm.xchange.utils.DateUtils;
+import org.knowm.xchange.dto.trade.UserTrade;
+import org.knowm.xchange.dto.trade.UserTrades;
 import org.knowm.xchange.utils.jackson.CurrencyPairDeserializer;
 
 public final class BitcoindeAdapters {
@@ -131,15 +131,15 @@ public final class BitcoindeAdapters {
     if (bitcoindeOrder.tradingPartnerInformation != null) {
       final TradingPartnerInformation tpi =
           new TradingPartnerInformation(
-              bitcoindeOrder.tradingPartnerInformation.userName,
-              bitcoindeOrder.tradingPartnerInformation.isKycFull,
+              bitcoindeOrder.tradingPartnerInformation.getUserName(),
+              bitcoindeOrder.tradingPartnerInformation.getIsKycFull(),
               TrustLevel.valueOf(
-                  bitcoindeOrder.tradingPartnerInformation.trustLevel.toUpperCase()));
-      tpi.setRating(bitcoindeOrder.tradingPartnerInformation.rating);
-      tpi.setNumberOfTrades(bitcoindeOrder.tradingPartnerInformation.amountTrades);
-      tpi.setBankName(bitcoindeOrder.tradingPartnerInformation.bankName);
-      tpi.setBic(bitcoindeOrder.tradingPartnerInformation.bic);
-      tpi.setSeatOfBank(bitcoindeOrder.tradingPartnerInformation.seatOfBank);
+                  bitcoindeOrder.tradingPartnerInformation.getTrustLevel().toUpperCase()));
+      tpi.setRating(bitcoindeOrder.tradingPartnerInformation.getRating());
+      tpi.setNumberOfTrades(bitcoindeOrder.tradingPartnerInformation.getAmountTrades());
+      tpi.setBankName(bitcoindeOrder.tradingPartnerInformation.getBankName());
+      tpi.setBic(bitcoindeOrder.tradingPartnerInformation.getBic());
+      tpi.setSeatOfBank(bitcoindeOrder.tradingPartnerInformation.getSeatOfBank());
       limitOrder.addOrderFlag(tpi);
     }
     if (bitcoindeOrder.orderRequirements != null) {
@@ -158,32 +158,137 @@ public final class BitcoindeAdapters {
   /**
    * Adapt a org.knowm.xchange.bitcoinde.dto.marketdata.BitcoindeAccount object to an AccountInfo
    * object.
-   *
    * @param bitcoindeAccount
    * @return
    */
   public static AccountInfo adaptAccountInfo(BitcoindeAccountWrapper bitcoindeAccount) {
-    // This adapter is not complete yet
     final BitcoindeBalances balances = bitcoindeAccount.getData().getBalances();
+
+    final Balance btcBalance = new Balance(Currency.BTC,
+            balances.btc.getTotalAmount(),
+            balances.btc.getAvailableAmount(),
+            balances.btc.getReservedAmount());
+
+    final Balance bchBalance = new Balance(Currency.BCH,
+            balances.bch.getTotalAmount(),
+            balances.bch.getAvailableAmount(),
+            balances.bch.getReservedAmount());
+
+    final Balance btgBalance = new Balance(Currency.BTG,
+            balances.btg.getTotalAmount(),
+            balances.btg.getAvailableAmount(),
+            balances.btg.getReservedAmount());
+
+    final Balance bsvBalance = new Balance(Currency.getInstance("BSV"),
+            balances.bsv.getTotalAmount(),
+            balances.bsv.getAvailableAmount(),
+            balances.bsv.getReservedAmount());
+
+    final Balance ethBalance = new Balance(Currency.ETH,
+            balances.eth.getTotalAmount(),
+            balances.eth.getAvailableAmount(),
+            balances.eth.getReservedAmount());
+
     final BitcoindeFidorReservation fidorReservation =
-        bitcoindeAccount.getData().getFidorReservation();
-    final Balance eurBalance =
-        new Balance(
-            Currency.EUR,
-            fidorReservation != null ? fidorReservation.getAvailableAmount() : BigDecimal.ZERO);
-    final Balance btcBalance = new Balance(Currency.BTC, balances.btc.getAvailableAmount());
-    final Balance ethBalance = new Balance(Currency.ETH, balances.eth.getAvailableAmount());
-    final Balance bchBalance = new Balance(Currency.BCH, balances.bch.getAvailableAmount());
-    final Balance bsvBalance =
-        new Balance(Currency.getInstance("BSV"), balances.bsv.getAvailableAmount());
-    final Balance btgBalance = new Balance(Currency.BTG, balances.btg.getAvailableAmount());
+            bitcoindeAccount.getData().getFidorReservation();
+
+    final Balance eurBalance = new Balance(Currency.EUR,
+            fidorReservation.getTotalAmount(),
+            fidorReservation.getAvailableAmount());
 
     return new AccountInfo(
-        Wallet.Builder.from(
-                Arrays.asList(
-                    btcBalance, ethBalance, bchBalance, bsvBalance, btgBalance, eurBalance))
-            .build());
+            Wallet.Builder.from(
+                    Arrays.asList(
+                            btcBalance, ethBalance, bchBalance, bsvBalance, btgBalance, eurBalance))
+                    .build());
   }
+
+  /**
+   * Adapt a org.knowm.xchange.bitcoinde.dto.marketdata.BitcoindeFundingHistoryWrapper object to a List<FundingRecord>
+   * object.
+   * @return
+   */
+  public static List<FundingRecord> adaptFundingHistory(BitcoindeFundingHistoryWrapper bitcoindeFundingHistoryWrapper, CurrencyPair currencyPair)
+  {
+    List<FundingRecord> fundingRecords = new ArrayList<>();
+    BigDecimal amount = new BigDecimal(0);
+
+    for (BitcoindeAccountLedger ledger : bitcoindeFundingHistoryWrapper.getAccountLedgers()){
+
+      /*
+      if (ledger.getType() == BitcoindeType.PAYOUT ||
+              ledger.getType() == BitcoindeType.KICKBACK ||
+              ledger.getType() == BitcoindeType.OUTGOING_FEE_VOLUNTARY){
+
+        amount = ledger.getTrade().getCurrencyToPay().getAfterFee();
+      }
+      else{
+        amount = ledger.getTrade().getCurrencyToPay().getBeforeFee();
+      }
+       */
+
+      fundingRecords.add(new FundingRecord.Builder()
+              //.setAddress(ledger.)
+              .setDate(ledger.getDate())
+              .setCurrency(currencyPair.base)
+              //.setAmount(amount)
+              .setBalance(ledger.getBalance())
+              .setType(adaptFundingType(ledger.getType()))
+              //?
+              .setBlockchainTransactionHash(ledger.getReference())
+              //.setInternalId(ledger.get)
+              //.setStatus()
+              //.setFee()
+              .build());
+    }
+    return fundingRecords;
+  }
+
+  /**
+   * Adapt a org.knowm.xchange.bitcoinde.dto.marketdata.BitcoindeTradeHistoryWrapper object to a List<UserTrade>
+   * object.
+   * @return
+   */
+  public static UserTrades adaptTradeHistory(BitcoindeTradeHistoryWrapper bitcoindeTradeHistoryWrapper, CurrencyPair currencyPair) {
+
+    List<UserTrade> trades = new ArrayList<>();
+
+    for (BitcoindeTradeHistoryTrade trade : bitcoindeTradeHistoryWrapper.getTrades()) {
+
+      trades.add(new UserTrade.Builder()
+              .type(adaptOrderType(trade.getType()))
+              .originalAmount(trade.getAmount())
+              .currencyPair(currencyPair)
+              .price(trade.getPrice())
+              .timestamp(trade.getCreatedAt())
+              .id(trade.getTid())
+              //.orderId()
+              //.orderUserReference(trade.getNewTradeIdForRemainingAmount())
+              .feeAmount(trade.getFeeToPay())
+              .feeCurrency(currencyPair.base)
+              .build());
+    }
+
+    return new UserTrades(trades, TradeSortType.SortByTimestamp);
+  }
+
+  /**
+   * Adapt a org.knowm.xchange.bitcoinde.dto.marketdata.BitcoindeTradeHistoryWrapper object to a OrderType
+   * object.
+   * @return
+   */
+  public static OrderType adaptOrderType(BitcoindeType bitcoindeType) {
+    return bitcoindeType.equals(BitcoindeType.BUY) ? OrderType.BID : OrderType.ASK;
+  }
+
+  /**
+   * Adapt a org.knowm.xchange.bitcoinde.dto.marketdata.BitcoindeType object to a FundingRecord.Type
+   * object.
+   * @return
+   */
+    public static FundingRecord.Type adaptFundingType(BitcoindeType bitcoindeType) {
+      return bitcoindeType.equals(BitcoindeType.BUY) ? FundingRecord.Type.WITHDRAWAL : FundingRecord.Type.DEPOSIT;
+    }
 
   /**
    * Adapt a org.knowm.xchange.bitcoinde.dto.marketdata.BitcoindeTrade[] object to a Trades object.
@@ -198,7 +303,7 @@ public final class BitcoindeAdapters {
     long lastTradeId = 0;
 
     for (BitcoindeTrade bitcoindeTrade : bitcoindeTradesWrapper.getTrades()) {
-      final long tid = bitcoindeTrade.getTid();
+      final long tid = Long.valueOf( bitcoindeTrade.getTid());
 
       if (tid > lastTradeId) {
         lastTradeId = tid;
@@ -208,7 +313,7 @@ public final class BitcoindeAdapters {
               .originalAmount(bitcoindeTrade.getAmount())
               .currencyPair(currencyPair)
               .price(bitcoindeTrade.getPrice())
-              .timestamp(DateUtils.fromMillisUtc(bitcoindeTrade.getDate() * 1000L))
+              .timestamp(bitcoindeTrade.getDate())
               .id(String.valueOf(tid))
               .build());
     }
