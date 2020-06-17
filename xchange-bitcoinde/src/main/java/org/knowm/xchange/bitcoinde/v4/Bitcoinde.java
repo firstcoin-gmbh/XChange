@@ -2,6 +2,7 @@ package org.knowm.xchange.bitcoinde.v4;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Date;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -12,8 +13,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeIdResponse;
-import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeResponse;
+
+import org.knowm.xchange.bitcoinde.v4.dto.*;
 import org.knowm.xchange.bitcoinde.v4.dto.account.BitcoindeAccountWrapper;
 import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeCompactOrderbookWrapper;
 import org.knowm.xchange.bitcoinde.v4.dto.marketdata.BitcoindeOrderbookWrapper;
@@ -80,13 +81,7 @@ public interface Bitcoinde {
       @QueryParam("since_tid") Integer since)
       throws IOException;
 
-  @GET
-  @Path("account")
-  BitcoindeAccountWrapper getAccount(
-      @HeaderParam("X-API-KEY") String apiKey,
-      @HeaderParam("X-API-NONCE") SynchronizedValueFactory<Long> nonce,
-      @HeaderParam("X-API-SIGNATURE") ParamsDigest paramsDigest)
-      throws IOException;
+
 
   @GET
   @Path("orders")
@@ -95,4 +90,41 @@ public interface Bitcoinde {
       @HeaderParam("X-API-NONCE") SynchronizedValueFactory<Long> nonce,
       @HeaderParam("X-API-SIGNATURE") ParamsDigest paramsDigest)
       throws IOException;
+
+  @GET
+  @Path("account")
+  BitcoindeAccountWrapper getAccount(
+          @HeaderParam("X-API-KEY") String apiKey,
+          @HeaderParam("X-API-NONCE") SynchronizedValueFactory<Long> nonce,
+          @HeaderParam("X-API-SIGNATURE") ParamsDigest paramsDigest)
+          throws BitcoindeException, IOException;
+
+  @GET
+  @Path("{currency}/account/ledger")
+  BitcoindeFundingHistoryWrapper getFundingHistory(
+          @HeaderParam("X-API-KEY") String apiKey,
+          @HeaderParam("X-API-NONCE") SynchronizedValueFactory<Long> nonce,
+          @HeaderParam("X-API-SIGNATURE") ParamsDigest paramsDigest,
+          @PathParam("currency") String currency,
+          @QueryParam("type") String type,
+          @QueryParam("datetime_start") Date datetimeStart,
+          @QueryParam("datetime_end") Date datetimeEnd,
+          @QueryParam("page") Integer page)
+          throws BitcoindeException, IOException;
+  @GET
+  @Path("{trading_pair}/trades")
+  BitcoindeTradeHistoryWrapper getTradeHistory(
+          @HeaderParam("X-API-KEY") String apiKey,
+          @HeaderParam("X-API-NONCE") SynchronizedValueFactory<Long> nonce,
+          @HeaderParam("X-API-SIGNATURE") ParamsDigest paramsDigest,
+          @PathParam("trading_pair") String tradingPair,
+          @QueryParam("type") String type,
+          @QueryParam("state") Integer state,
+          @QueryParam("only_trades_with_action_for_payment_or_transfer_required")
+                  Integer onlyTradesWithActionForPaymentOrTransferRequired,
+          @QueryParam("payment_method") Integer paymentMethod,
+          @QueryParam("date_start") Date dateStart,
+          @QueryParam("date_end") Date dateEnd,
+          @QueryParam("page") Integer page)
+          throws BitcoindeException, IOException;
 }

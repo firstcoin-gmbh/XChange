@@ -54,6 +54,6 @@ public class BitcoindeMarketDataService extends BitcoindeMarketDataServiceRaw
       }
     }
 
-    return adaptTrades(getBitcoindeTrades(currencyPair, since), currencyPair);
+    return adaptTrades(getBitcoindeTrades(currencyPair, since), currencyPair, Trades.TradeSortType.SortByTimestamp);
   }
 }

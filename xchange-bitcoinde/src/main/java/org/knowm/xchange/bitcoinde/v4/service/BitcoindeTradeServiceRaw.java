@@ -3,11 +3,14 @@ package org.knowm.xchange.bitcoinde.v4.service;
 import static org.knowm.xchange.bitcoinde.BitcoindeUtils.*;
 
 import java.io.IOException;
+import java.util.Date;
+
 import org.knowm.xchange.bitcoinde.BitcoindeUtils;
 import org.knowm.xchange.bitcoinde.v4.BitcoindeExchange;
 import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeException;
 import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeIdResponse;
 import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeResponse;
+import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeTradeHistoryWrapper;
 import org.knowm.xchange.bitcoinde.v4.dto.trade.BitcoindeMyOpenOrdersWrapper;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.trade.LimitOrder;
@@ -57,5 +60,29 @@ public class BitcoindeTradeServiceRaw extends BitcoindeBaseService {
     } catch (BitcoindeException e) {
       throw handleError(e);
     }
+  }
+
+  public BitcoindeTradeHistoryWrapper getBitcoindeTradesHistory(CurrencyPair currencyPair,
+                                                                String type,
+                                                                Integer state,
+                                                                Integer onlyTradesWithActionForPaymentOrTransferRequired,
+                                                                Integer paymentMethod,
+                                                                Date dateStart,
+                                                                Date dateEnd,
+                                                                Integer page) throws IOException{
+
+    return bitcoinde.getTradeHistory(
+            apiKey,
+            nonceFactory,
+            signatureCreator,
+            BitcoindeUtils.createBitcoindePair(currencyPair),
+            type,
+            state,
+            onlyTradesWithActionForPaymentOrTransferRequired,
+            paymentMethod,
+            dateStart,
+            dateEnd,
+            page
+    );
   }
 }

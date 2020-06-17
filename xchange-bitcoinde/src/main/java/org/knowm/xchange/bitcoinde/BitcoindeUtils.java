@@ -1,5 +1,7 @@
 package org.knowm.xchange.bitcoinde;
 
+import org.knowm.xchange.bitcoinde.v4.BitcoindePaymentOption;
+import org.knowm.xchange.bitcoinde.v4.dto.trade.BitcoindeTradeState;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order.OrderType;
 
@@ -18,5 +20,21 @@ public class BitcoindeUtils {
 
   public static int createBitcoindeBoolean(boolean value) {
     return value ? 1 : 0;
+  }
+
+  public static int createBitcoindePaymentOption(BitcoindePaymentOption option){
+    return option.equals(BitcoindePaymentOption.SEPA_ONLY) ?  1 : 2;
+  }
+
+  public static int createBitcoindeTradeState(BitcoindeTradeState tradeState){
+    switch (tradeState)
+    {
+      case PENDING:
+        return  0;
+      case SUCCESSFUL:
+        return 1;
+      default:
+        return -1;
+    }
   }
 }
