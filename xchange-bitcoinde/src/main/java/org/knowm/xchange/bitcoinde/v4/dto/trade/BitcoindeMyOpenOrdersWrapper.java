@@ -1,6 +1,8 @@
 package org.knowm.xchange.bitcoinde.v4.dto.trade;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.knowm.xchange.bitcoinde.v4.dto.BitcoindePage;
+
 import java.util.List;
 
 public class BitcoindeMyOpenOrdersWrapper {

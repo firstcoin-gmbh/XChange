@@ -1,0 +1,23 @@
+{
+	"date": "2020-04-21T08:51:06+02:00",
+	"type": "sell",
+	"reference": "2C44PC",
+	"trade": {
+		"trade_id": "2C44PC",
+		"price": "6422.07",
+		"is_external_wallet_trade": false,
+		"trading_pair": "btceur",
+		"currency_to_trade": {
+			"currency": "btc",
+			"before_fee": "0.01200000",
+			"after_fee": "0.01188000"
+		},
+		"currency_to_pay": {
+			"currency": "eur",
+			"before_fee": "77.06",
+			"after_fee": "76.67"
+		}
+	},
+	"cashflow": "-0.01200000",
+	"balance": "17.68650682"
+}

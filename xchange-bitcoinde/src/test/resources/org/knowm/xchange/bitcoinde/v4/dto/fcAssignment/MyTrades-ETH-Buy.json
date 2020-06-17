@@ -1,0 +1,29 @@
+{
+	"trade_id": "8P5Z3Q",
+	"trading_pair": "etheur",
+	"is_external_wallet_trade": false,
+	"type": "buy",
+	"amount_currency_to_trade": "0.9516129",
+	"price": 155.73,
+	"volume_currency_to_pay": 148.19,
+	"volume_currency_to_pay_after_fee": 147.6,
+	"amount_currency_to_trade_after_fee": 0.944,
+	"fee_currency_to_pay": 0.59,
+	"fee_currency_to_trade": "0.00761290",
+	"created_at": "2020-04-21T02:52:15+02:00",
+	"successfully_finished_at": "2020-04-21T02:52:19+02:00",
+	"state": 1,
+	"is_trade_marked_as_paid": false,
+	"payment_method": 2,
+	"my_rating_for_trading_partner": "positive",
+	"trading_partner_information": {
+		"username": "Shroom4you",
+		"is_kyc_full": false,
+		"trust_level": "bronze",
+		"amount_trades": 13,
+		"rating": 100,
+		"bank_name": "COMMERZBANK AG",
+		"bic": "COBADEFFXXX",
+		"seat_of_bank": "DE"
+	}
+}

@@ -1,0 +1,30 @@
+{
+	"trade_id": "X7GEKA",
+	"trading_pair": "btceur",
+	"is_external_wallet_trade": false,
+	"type": "sell",
+	"amount_currency_to_trade": "0.2",
+	"price": 6429.99,
+	"volume_currency_to_pay": 1286,
+	"volume_currency_to_pay_after_fee": 1279.56,
+	"amount_currency_to_trade_after_fee": 0.198,
+	"fee_currency_to_pay": 6.43,
+	"fee_currency_to_trade": "0.00200000",
+	"created_at": "2020-04-21T11:08:54+02:00",
+	"successfully_finished_at": "2020-04-22T08:55:27+02:00",
+	"state": 1,
+	"is_trade_marked_as_paid": true,
+	"trade_marked_as_paid_at": "2020-04-21T11:46:49+02:00",
+	"payment_method": 1,
+	"my_rating_for_trading_partner": "positive",
+	"trading_partner_information": {
+		"username": "lofty045",
+		"is_kyc_full": true,
+		"trust_level": "bronze",
+		"amount_trades": 0,
+		"rating": 0,
+		"bank_name": "DEUTSCHE POSTBANK AG",
+		"bic": "PBNKDEFFXXX",
+		"seat_of_bank": "DE"
+	}
+}

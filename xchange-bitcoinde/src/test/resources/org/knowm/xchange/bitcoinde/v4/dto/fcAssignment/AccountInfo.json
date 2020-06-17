@@ -1,0 +1,69 @@
+{
+	"data": {
+		"balances": {
+			"btc": {
+				"total_amount": "8.72148416",
+				"available_amount": "6.07848416",
+				"reserved_amount": "2.643"
+			},
+			"bch": {
+				"total_amount": "40.27951459",
+				"available_amount": "40.27951459",
+				"reserved_amount": "0"
+			},
+			"btg": {
+				"total_amount": "0",
+				"available_amount": "0",
+				"reserved_amount": "0"
+			},
+			"eth": {
+				"total_amount": "53.48876897",
+				"available_amount": "23.23876897",
+				"reserved_amount": "30.25"
+			},
+			"bsv": {
+				"total_amount": "4.85",
+				"available_amount": "4.85",
+				"reserved_amount": "0"
+			}
+		},
+		"fidor_reservation": {
+			"total_amount": 25000,
+			"available_amount": 23828.14,
+			"reserved_at": "2020-04-16T13:01:10+02:00",
+			"valid_until": "2020-04-23T13:01:00+02:00",
+			"allocation": {
+				"btc": {
+					"percent": 50,
+					"max_eur_volume": 11914.07,
+					"eur_volume_open_orders": 0
+				},
+				"bch": {
+					"percent": 0,
+					"max_eur_volume": 0,
+					"eur_volume_open_orders": 0
+				},
+				"btg": {
+					"percent": 0,
+					"max_eur_volume": 0,
+					"eur_volume_open_orders": 0
+				},
+				"eth": {
+					"percent": 50,
+					"max_eur_volume": 11914.07,
+					"eur_volume_open_orders": 10118.14
+				},
+				"bsv": {
+					"percent": 0,
+					"max_eur_volume": 0,
+					"eur_volume_open_orders": 0
+				}
+			}
+		},
+		"encrypted_information": {
+			"uid": "0yybQJgKojghf0Phqg..",
+			"bic_short": "0yzjPeTwlzkig1B-",
+			"bic_full": "0yzjPeTw33DssfxIB4io2Mow-w.."
+		}
+	}
+}

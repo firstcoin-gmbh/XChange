@@ -1,4 +1,4 @@
-package org.knowm.xchange.bitcoinde.v4.dto.trade;
+package org.knowm.xchange.bitcoinde.v4.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
