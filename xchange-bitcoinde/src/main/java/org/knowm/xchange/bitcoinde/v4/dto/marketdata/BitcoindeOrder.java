@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeOrderRequirements;
-import org.knowm.xchange.bitcoinde.v4.dto.BitcoindeTradingPartnerInformation;
+import org.knowm.xchange.bitcoinde.v4.dto.trade.BitcoindeTradingPartnerInformation;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BitcoindeOrder {

@@ -310,7 +310,10 @@ public final class FundingRecord implements Serializable {
     REALISED_LOSS(false),
 
     /** Used for realised profits from derivatives */
-    REALISED_PROFIT(true);
+    REALISED_PROFIT(true),
+
+    /** For Bitcoinde **/
+    KICKBACK(true);
 
     private static final Map<String, Type> fromString = new HashMap<>();
 
